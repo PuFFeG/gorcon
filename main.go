@@ -5,14 +5,13 @@ import (
     "os"
 	"time"
 	"pal/logger"
-        "pal/data"
-	_ "github.com/go-sql-driver/mysql"
+	"pal/data"	
 )
 
 // Player структура для хранения данных о каждом игроке
 func main() {
     // Открытие файла логов
-    file, err := os.OpenFile("/pal/log.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+    file, err := os.OpenFile("log.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
     if err != nil {
         log.Fatal("Ошибка открытия файла логов:", err)
     }

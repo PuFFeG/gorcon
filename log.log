@@ -1,0 +1,2 @@
+2024/05/01 01:13:08 logger.go:53: [ERROR] Ошибка при подключении к базе данных: sql: unknown driver "mysql" (forgotten import?)
+2024/05/01 01:13:08 logger.go:53: [ERROR] Ошибка обновления данных: sql: unknown driver "mysql" (forgotten import?)
