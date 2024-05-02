@@ -6,35 +6,42 @@ import (
 	"time"
 	"pal/logger"
 	"pal/data"	
+		"database/sql"
+	"pal/config"	
+	"pal/sqlconn"	
 )
-
-// Player структура для хранения данных о каждом игроке
 func main() {
+    cfg, err := config.LoadConfigFromFile("config.json")
+    if err != nil {
+        // Обработка ошибки загрузки конфигурации
+    }
+
     // Открытие файла логов
     file, err := os.OpenFile("log.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
     if err != nil {
         log.Fatal("Ошибка открытия файла логов:", err)
     }
     defer file.Close()
-
-    // Создание нового экземпляра Logger
-// Создание нового экземпляра Logger
-logInstance := logger.NewLogger(logger.Info, file)
-//logInstance.Log(logger.Error, "Это сообщение об ошибке")
+	logInstance := logger.NewLogger(logger.Info, file)
+    db, err := sqlconn.InitDB(logInstance, cfg.MySQL)
+    if err != nil {
+        // Handle error
+    }
+	//logInstance.Log(logger.Error, "Это сообщение об ошибке")
 //logInstance.Log(logger.Warning, "Это предупреждение")
 //logInstance.Log(logger.Info, "Это информационное сообщение")
 // Запуск функции обновления данных каждую минуту
-go updateDataEveryMinute(logInstance)
+go updateDataEveryMinute(db, logInstance, cfg)
 
 
 	// Бесконечный цикл, чтобы главная горутина не завершилась
 	select {}
 }
 
-func updateDataEveryMinute(logger *logger.Logger) {
+func updateDataEveryMinute(db *sql.DB, logger *logger.Logger, cfg config.Config) {
     for {
         // Вызов функции обновления данных
-        err := data.UpdateData(logger)
+        err := data.UpdateData(db, logger,cfg)
         if err != nil {
             logger.Error("Ошибка обновления данных: %v", err)
         }

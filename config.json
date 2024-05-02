@@ -1,0 +1,17 @@
+{
+    "mysql": {
+        "ip": "192.168.31.129",
+        "port": 3306,
+        "login": "palka",
+        "password": "palka",
+        "database": "PalUsers",
+        "table": "users3"
+    },
+    "server": {
+        "name": "server1",
+        "ip": "192.168.31.194",
+        "port": 8282,
+        "login": "admin",
+        "password": "236006"
+    }
+}
