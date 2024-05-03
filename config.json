@@ -8,7 +8,8 @@
         "table": "users3"
     },
     "server": {
-        "name": "server1",
+        "rconPatch": "./ARRCON",
+        "rconPort": "2555",
         "ip": "192.168.31.194",
         "port": 8282,
         "login": "admin",

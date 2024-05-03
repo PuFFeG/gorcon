@@ -17,11 +17,12 @@ type MySQLConfig struct {
 
 // ServerConfig содержит настройки для одного сервера.
 type ServerConfig struct {
-    Name     string `json:"name"`
-    IP       string `json:"ip"`
-    Port     int    `json:"port"`
-    Login    string `json:"login"`
-    Password string `json:"password"`
+    RconPatch string `json:"rconPatch"`
+    RconPort  string `json:"rconPort"`
+    IP        string `json:"ip"`
+    Port      int    `json:"port"`
+    Login     string `json:"login"`
+    Password  string `json:"password"`
 }
 
 // PakPatchConfig содержит настройки для группы "pakpatch".

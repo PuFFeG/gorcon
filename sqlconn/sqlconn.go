@@ -156,7 +156,7 @@ func ChangeReward(db *sql.DB, tableName, userID, rewardName string, logger *logg
         logger.Error("Ошибка при обновлении флага '%s' для игрока '%s': %v", rewardName, userID, err)
         return err
     }
-    err = givepak.GivePak(logger, userID, rewardName, cfg.Server)
+    err = givepak.GivePak(logger, userID, rewardName, cfg)
     if err != nil {
         return  err
     }
