@@ -13,5 +13,13 @@
         "port": 8282,
         "login": "admin",
         "password": "236006"
+    },
+    "pakpatch": {
+        "Reward0": "/pak/Reward0.json",
+        "Reward10": "/pak/Reward10.json",
+        "Reward20": "/pak/Reward20.json",
+        "Reward30": "/pak/Reward30.json",
+        "Reward40": "/pak/Reward40.json",
+        "Reward50": "/pak/Reward50.json"
     }
 }

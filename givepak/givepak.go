@@ -9,7 +9,7 @@ import (
 )
 
 // GivePak принимает имя игрока и путь к JSON-файлу с конфигурацией и выполняет команды для выдачи предметов
-func GivePak(logger *logger.Logger, playerName string, jsonPath string) error {
+func GivePak(logger *logger.Logger, playerName string, jsonPath string, cfg config.Config) error {
 			logger.Info("New play")
 
 	// Открываем файл с конфигурацией

@@ -20,6 +20,17 @@ func UpdateData(db *sql.DB, logger *logger.Logger,cfg config.Config) error {
 	if err != nil {
 		return err
 	}
-
+checkRewardsForPlayers(db, cfg.MySQL.Table, players, logger)
 	return nil
+}
+func checkRewardsForPlayers(db *sql.DB, tableName string, players []restjs.Player, logger *logger.Logger) error {
+    for _, player := range players {
+        _, err := sqlconn.CheckRewards(db, tableName, player.UserID, player.Level, logger)
+        if err != nil {
+            logger.Error("Ошибка при проверке наград для игрока %s: %v", player.UserID, err)
+            // Продолжаем проверку для следующего игрока даже в случае ошибки
+            continue
+        }
+    }
+    return nil
 }

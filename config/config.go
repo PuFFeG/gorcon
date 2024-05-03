@@ -1,4 +1,3 @@
-// В файле config.go
 package config
 
 import (
@@ -13,22 +12,33 @@ type MySQLConfig struct {
     Login    string `json:"login"`
     Password string `json:"password"`
     Database string `json:"database"`
-    Table    string      `json:"table"`
+    Table    string `json:"table"`
 }
 
 // ServerConfig содержит настройки для одного сервера.
 type ServerConfig struct {
-    Name     string      `json:"name"`
-    IP       string      `json:"ip"`
-    Port     int         `json:"port"`
-    Login    string      `json:"login"`
-    Password string      `json:"password"`
+    Name     string `json:"name"`
+    IP       string `json:"ip"`
+    Port     int    `json:"port"`
+    Login    string `json:"login"`
+    Password string `json:"password"`
+}
+
+// PakPatchConfig содержит настройки для группы "pakpatch".
+type PakPatchConfig struct {
+    Reward0 	string `json:"Reward0"`
+    Reward10    string `json:"Reward10"`
+    Reward20    string `json:"Reward20"`
+    Reward30    string `json:"Reward30"`
+    Reward40    string `json:"Reward40"`
+    Reward50    string `json:"Reward50"`
 }
 
 // Config содержит всю конфигурацию для приложения.
 type Config struct {
-    MySQL  MySQLConfig   `json:"mysql"`
-    Server ServerConfig `json:"server"`
+    MySQL    MySQLConfig    `json:"mysql"`
+    Server   ServerConfig   `json:"server"`
+    PakPatch PakPatchConfig `json:"pakpatch"`
 }
 
 // LoadConfigFromFile загружает конфигурацию из файла.

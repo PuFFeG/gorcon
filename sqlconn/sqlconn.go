@@ -8,6 +8,7 @@ _ "github.com/go-sql-driver/mysql"
 	"pal/logger"
 	"pal/restjs"
 	"pal/config"
+	"pal/givepak"
 
 )
 var db *sql.DB
@@ -84,5 +85,101 @@ stmt, err := db.Prepare(query)
         logger.Error("Ошибка выполнения запроса к базе данных: %v", err)
         return err
     }
+    return nil
+}
+
+func CheckRewards(db *sql.DB, tableName string, playerID string, playerLevel int, logger *logger.Logger) (bool, error) {
+    // Составляем SQL-запрос для получения значений флагов из базы данных
+    query := fmt.Sprintf("SELECT Reward0, Reward10, Reward20, Reward30, Reward40, Reward50 FROM %s WHERE UserID = ?", tableName)
+    row := db.QueryRow(query, playerID)
+
+    // Переменные для хранения значений флагов из базы данных и ошибки
+    var reward0, reward10, reward20, reward30, reward40, reward50 bool
+    // Сканируем результат запроса в переменные
+    if err := row.Scan(&reward0, &reward10, &reward20, &reward30, &reward40, &reward50); err != nil {
+        if err == sql.ErrNoRows {
+            // Если нет строк, игрок не найден, можно вернуть false и ошибку nil
+			        logger.Info("сли нет строк, игрок не найден, можно вернуть false и ошибку nil")
+            return false, nil
+        }
+        logger.Error("Ошибка выполнения запроса к базе данных: %v", err)
+        return false, err
+    }
+        logger.Info("Вход в reward532131230")
+		
+    // Проверяем флаги начиная с Reward50
+switch true {
+
+case !reward50 && playerLevel >= 50:
+    logger.Info("Вход в reward50")
+    err := givepak.GivePak(logger, playerID, "Reward50")
+    if err != nil {
+        return true, err
+    }
+	    // Изменяем значение флага на true в базе данных
+    err = ChangeReward(db, tableName, playerID, "Reward50", logger)
+    if err != nil {
+        return true, err
+    }
+    return true, nil
+case !reward40 && playerLevel >= 40:
+    logger.Info("Вход в reward40")
+    err := givepak.GivePak(logger, playerID, "Reward40")
+    if err != nil {
+        return true, err
+    }
+    return true, nil
+case !reward30 && playerLevel >= 30:
+    logger.Info("Вход в reward30")
+    err := givepak.GivePak(logger, playerID, "Reward30")
+    if err != nil {
+        return true, err
+    }
+    return true, nil
+case !reward20 && playerLevel >= 20:
+    logger.Info("Вход в reward20")
+    err := givepak.GivePak(logger, playerID, "Reward20")
+    if err != nil {
+        return true, err
+    }
+    return true, nil
+case !reward10 && playerLevel >= 10:
+    logger.Info("Вход в reward10")
+    err := givepak.GivePak(logger, playerID, "Reward10")
+    if err != nil {
+        return true, err
+    }
+    return true, nil
+case !reward0:
+    logger.Info("Вход в reward0")
+    // Изменяем значение флага на true в базе данных
+    err := ChangeReward(db, tableName, playerID, "Reward0", logger)
+    if err != nil {
+        return true, err
+    }
+    err = givepak.GivePak(logger, playerID, "Reward0")
+    if err != nil {
+        return true, err
+    }
+	
+    return true, nil
+}
+
+    // Если ни один из флагов не установлен, возвращаем false и ошибку nil
+    return false, nil
+}
+
+func ChangeReward(db *sql.DB, tableName, userID, rewardName string, logger *logger.Logger) error {
+    // Составляем SQL-запрос для обновления значения флага в базе данных
+    query := fmt.Sprintf("UPDATE %s SET %s = TRUE WHERE UserID = ?", tableName, rewardName)
+
+    // Выполняем SQL-запрос
+    _, err := db.Exec(query, userID)
+    if err != nil {
+        logger.Error("Ошибка при обновлении флага '%s' для игрока '%s': %v", rewardName, userID, err)
+        return err
+    }
+
+    logger.Info("Флаг '%s' для игрока '%s' успешно обновлен", rewardName, userID)
     return nil
 }
