@@ -25,7 +25,7 @@ checkRewardsForPlayers(db, cfg.MySQL.Table, players, logger, cfg)
 }
 func checkRewardsForPlayers(db *sql.DB, tableName string, players []restjs.Player, logger *logger.Logger, cfg config.Config) error {
     for _, player := range players {
-        _, err := sqlconn.CheckRewards(db, tableName, player.UserID, player.Level, logger, cfg)
+        _, err := sqlconn.CheckRewards(db, tableName, player.PlayerID, player.UserID, player.Level, logger, cfg)
         if err != nil {
             logger.Error("Ошибка при проверке наград для игрока %s: %v", player.UserID, err)
             // Продолжаем проверку для следующего игрока даже в случае ошибки
