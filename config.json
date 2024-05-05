@@ -9,18 +9,18 @@
     },
     "server": {
         "rconPatch": "./ARRCON",
-        "rconPort": "2555",
+        "rconPort": "25575",
         "ip": "192.168.31.194",
         "port": 8282,
         "login": "admin",
         "password": "236006"
     },
     "pakpatch": {
-        "Reward0": "/pak/Reward0.json",
-        "Reward10": "/pak/Reward10.json",
-        "Reward20": "/pak/Reward20.json",
-        "Reward30": "/pak/Reward30.json",
-        "Reward40": "/pak/Reward40.json",
-        "Reward50": "/pak/Reward50.json"
+        "Reward0": "/gorcon/pak/Reward0.json",
+        "Reward10": "/gorcon/pak/Reward10.json",
+        "Reward20": "/gorcon/pak/Reward20.json",
+        "Reward30": "/gorcon/pak/Reward30.json",
+        "Reward40": "/gorcon/pak/Reward40.json",
+        "Reward50": "/gorcon/pak/Reward50.json"
     }
 }

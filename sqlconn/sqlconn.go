@@ -4,7 +4,6 @@ import (
 _ "github.com/go-sql-driver/mysql"
 	"database/sql"
 	"fmt"
-	"time"
 	"pal/logger"
 	"pal/restjs"
 	"pal/config"
@@ -72,7 +71,7 @@ func checkPlayerData(db *sql.DB, tableName string, player restjs.Player, logger 
 }
 
 func addPlayerData(db *sql.DB, tableName string, player restjs.Player, logger *logger.Logger) error {
-	query := fmt.Sprintf("INSERT INTO %s (PlayerID, Name, UserID, IP, Lvl, last_login) VALUES (?, ?, ?, ?, ?, ?)", tableName)
+	query := fmt.Sprintf("INSERT INTO %s (PlayerID, Name, UserID, IP, Lvl) VALUES (?, ?, ?, ?, ?)", tableName)
 stmt, err := db.Prepare(query)
     if err != nil {
         logger.Error("Ошибка при подготовке запроса к базе данных: %v", err)
@@ -80,7 +79,7 @@ stmt, err := db.Prepare(query)
     }
     defer stmt.Close()
 
-    _, err = stmt.Exec(player.UserID, player.Name, player.UserID, player.IP, player.Level, time.Now())
+    _, err = stmt.Exec(player.PlayerID, player.Name, player.UserID, player.IP, player.Level)
     if err != nil {
         logger.Error("Ошибка выполнения запроса к базе данных: %v", err)
         return err

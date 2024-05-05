@@ -8,10 +8,11 @@ import (
 	"pal/logger"
 	"pal/config"
 	"time"
+	"strings"
 )
 
 // GivePak принимает имя игрока и путь к JSON-файлу с конфигурацией и выполняет команды для выдачи предметов
-func GivePak(logger *logger.Logger, playerName string, jsonPath string, cfg config.Config) error {
+func GivePak(logger *logger.Logger, userID string, jsonPath string, cfg config.Config) error {
 	logger.Info("New play")
 var jsonPars string
 
@@ -58,11 +59,12 @@ default:
 		fmt.Printf("Ошибка декодирования JSON: %v\n", err)
 		return err
 	}
-
+                        // Удаление префикса "steam_" из UserID
+                        userID = strings.TrimPrefix(userID, "steam_")
 	// Перебираем элементы конфигурации и выполняем команды для выдачи предметов
 	for _, item := range config.Items {
 		// Подготовка команды для текущего элемента и игрока
-		command := fmt.Sprintf("%s -H %s -P %d -p %s \"give %s %s %d\"", cfg.Server.RconPatch, cfg.Server.IP, cfg.Server.RconPort, cfg.Server.Password, playerName, item.Item, item.Quantity)
+		command := fmt.Sprintf("%s -H %s -P %s -p %s \"give %s %s %d\"", cfg.Server.RconPatch, cfg.Server.IP, cfg.Server.RconPort, cfg.Server.Password, userID, item.Item, item.Quantity)
 		fmt.Println("Выполняем команду:", command)
 
 		// Выполнение команды ARRCON
