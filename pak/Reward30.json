@@ -1,6 +1,7 @@
 {
     "items": [
-        {"item": "Salad", "quantity": 5}
+        {"item": "Glider_Super", "quantity": 1},
+        {"item": "Opium", "quantity": 5}
     ]
 }
 

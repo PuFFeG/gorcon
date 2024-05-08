@@ -1,21 +1,21 @@
 {
     "items": [
-        {"item": "Head010_5", "quantity": 1},
-        {"item": "ClothArmor_2", "quantity": 1},
+        {"item": "Head010", "quantity": 1},
+        {"item": "ClothArmor", "quantity": 1},
         {"item": "WeakerBow", "quantity": 1},
         {"item": "arrow", "quantity": 500},
         {"item": "Glider_Old", "quantity": 1},
         {"item": "GrapplingGun", "quantity": 1},
         {"item": "Shield_01", "quantity": 1},
-        {"item": "PalSphere", "quantity": 500},
+        {"item": "PalSphere", "quantity": 100},
         {"item": "axe_Tier_01", "quantity": 1},
         {"item": "Pickaxe_Tier_01", "quantity": 1},
-        {"item": "Lantern", "quantity": 2},
+        {"item": "Torch", "quantity": 1},
         {"item": "AutoMealPouch_Tier1", "quantity": 1},
-        {"item": "Accessory_CoolResist_2", "quantity": 1},
-        {"item": "Accessory_HeatResist_2", "quantity": 1},
+        {"item": "Accessory_CoolResist_1", "quantity": 1},
+        {"item": "Accessory_HeatResist_1", "quantity": 1},
         {"item": "PalSphere_Legend", "quantity": 2},
-        {"item": "TechnologyBook_G1", "quantity": 1},
+        {"item": "TechnologyBook_G1", "quantity": 2},
         {"item": "Salad", "quantity": 50}
     ]
 }

@@ -1,10 +1,12 @@
 {
     "items": [
-        {"item": "axe_Tier_02", "quantity": 1},
-        {"item": "Pickaxe_Tier_02", "quantity": 1},
-        {"item": "PalSphere_Legend", "quantity": 10},
-        {"item": "TechnologyBook_G3", "quantity": 3},
-        {"item": "Salad", "quantity": 50}
+        {"item": "BowGun", "quantity": 1},
+        {"item": "Head015_2", "quantity": 1},
+        {"item": "WeakerBow_3", "quantity": 1},
+        {"item": "PalSphere_Mega", "quantity": 100},
+        {"item": "PalSphere_Legend", "quantity": 5},
+        {"item": "TechnologyBook_G1", "quantity": 5},
+        {"item": "Pizza", "quantity": 50}
     ]
 }
 

@@ -4,10 +4,10 @@ import (
 _ "github.com/go-sql-driver/mysql"
 	"database/sql"
 	"fmt"
-	"pal/logger"
-	"pal/restjs"
-	"pal/config"
-	"pal/givepak"
+	"draw/logger"
+	"draw/restjs"
+	"draw/config"
+	"draw/givepak"
 
 )
 var db *sql.DB

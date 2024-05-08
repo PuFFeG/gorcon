@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os/exec"
-	"pal/logger"
-	"pal/config"
+	"draw/logger"
+	"draw/config"
 	"time"
 	"strings"
 )

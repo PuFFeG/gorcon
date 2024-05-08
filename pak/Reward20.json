@@ -1,6 +1,7 @@
 {
     "items": [
-        {"item": "Salad", "quantity": 5}
+        {"item": "CopperArmor", "quantity": 1},
+        {"item": "Pan", "quantity": 5}
     ]
 }
 
