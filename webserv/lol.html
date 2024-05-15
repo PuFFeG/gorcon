@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOL</title>
+</head>
+<body>
+
+<h2>LOL</h2>
+
+<button id="launchRocketButton">Запустить ракету</button>
+
+<script>
+    document.getElementById("launchRocketButton").addEventListener("click", function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/lol", true);
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                alert(xhr.responseText);
+            } else {
+                alert("Ошибка: " + xhr.status);
+            }
+        };
+        xhr.send();
+    });
+</script>
+
+</body>
+</html>

@@ -16,11 +16,14 @@
         "password": "236006"
     },
     "pakpatch": {
-        "Reward0": "/109/pak/Reward0.json",
-        "Reward10": "/109/pak/Reward10.json",
-        "Reward20": "/109/pak/Reward20.json",
-        "Reward30": "/109/pak/Reward30.json",
-        "Reward40": "/109/pak/Reward40.json",
-        "Reward50": "/109/pak/Reward50.json"
+        "Reward0": "./pak/Reward0.json",
+        "Reward10": "./pak/Reward10.json",
+        "Reward20": "./pak/Reward20.json",
+        "Reward30": "./pak/Reward30.json",
+        "Reward40": "./pak/Reward40.json",
+        "Reward50": "./pak/Reward50.json",
+        "RewardDay": "./pak/RewardDay.json",
+        "RewardWeek": "./pak/RewardWeek.json"
+
     }
 }

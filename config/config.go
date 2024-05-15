@@ -3,6 +3,7 @@ package config
 import (
     "encoding/json"
     "os"
+	    "sync"
 )
 
 // MySQLConfig содержит настройки для подключения к базе данных MySQL.
@@ -33,6 +34,9 @@ type PakPatchConfig struct {
     Reward30    string `json:"Reward30"`
     Reward40    string `json:"Reward40"`
     Reward50    string `json:"Reward50"`
+    RewardDay    string `json:"RewardDay"`
+    RewardWeek    string `json:"RewardWeek"`
+
 }
 
 // Config содержит всю конфигурацию для приложения.
@@ -44,6 +48,37 @@ type Config struct {
 
 // LoadConfigFromFile загружает конфигурацию из файла.
 func LoadConfigFromFile(filename string) (Config, error) {
+    var config Config
+    configFile, err := os.Open(filename)
+    if err != nil {
+        return config, err
+    }
+    defer configFile.Close()
+
+    decoder := json.NewDecoder(configFile)
+    if err := decoder.Decode(&config); err != nil {
+        return config, err
+    }
+
+    return config, nil
+}
+
+var (
+    cfg     Config
+    cfgOnce sync.Once
+    cfgErr  error
+)
+
+func GetConfigSrv() (ServerConfig, error) {
+    cfgOnce.Do(func() {
+        // Загружаем конфигурацию при первом вызове функции
+        cfg, cfgErr = loadConfig("config.json")
+    })
+    return cfg.Server, cfgErr
+}
+
+// loadConfig загружает конфигурацию из файла и возвращает ее.
+func loadConfig(filename string) (Config, error) {
     var config Config
     configFile, err := os.Open(filename)
     if err != nil {

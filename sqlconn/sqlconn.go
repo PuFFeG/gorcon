@@ -89,54 +89,63 @@ stmt, err := db.Prepare(query)
 
 func CheckRewards(db *sql.DB, tableName string, PlayerID string, UserID string, playerLevel int, logger *logger.Logger, cfg config.Config) (bool, error) {
     // Составляем SQL-запрос для получения значений флагов из базы данных
-    query := fmt.Sprintf("SELECT Reward0, Reward10, Reward20, Reward30, Reward40, Reward50 FROM %s WHERE PlayerID = ?", tableName)
+    query := fmt.Sprintf("SELECT Reward0, Reward10, Reward20, Reward30, Reward40, Reward50, RewardDay, RewardWeek FROM %s WHERE PlayerID = ?", tableName)
     row := db.QueryRow(query, PlayerID)
 
     // Переменные для хранения значений флагов из базы данных и ошибки
-    var reward0, reward10, reward20, reward30, reward40, reward50 bool
+    var reward0, reward10, reward20, reward30, reward40, reward50, rewardDay, rewardWeek bool
     // Сканируем результат запроса в переменные
-    if err := row.Scan(&reward0, &reward10, &reward20, &reward30, &reward40, &reward50); err != nil {
+    if err := row.Scan(&reward0, &reward10, &reward20, &reward30, &reward40, &reward50, &rewardDay, &rewardWeek); err != nil {
         if err == sql.ErrNoRows {
             // Если нет строк, игрок не найден, можно вернуть false и ошибку nil
-			        logger.Info("сли нет строк, игрок не найден, можно вернуть false и ошибку nil")
+            logger.Info("сли нет строк, игрок не найден, можно вернуть false и ошибку nil")
             return false, nil
         }
         logger.Error("Ошибка выполнения запроса к базе данных: %v", err)
         return false, err
     }
-		    // Проверяем флаги начиная с Reward50
-switch true {
-case !reward50 && playerLevel >= 50:
-    if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward50", logger, cfg); err != nil {
-        return true, err
+
+    // Проверяем флаги начиная с Reward50
+    switch true {
+    case !rewardDay:
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "RewardDay", logger, cfg); err != nil {
+            return true, err
+        }
+    case !rewardWeek && playerLevel >= 222:
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "RewardWeek", logger, cfg); err != nil {
+            return true, err
+        }
+    case !reward50 && playerLevel >= 50:
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward50", logger, cfg); err != nil {
+            return true, err
+        }
+        return true, nil
+    case !reward40 && playerLevel >= 40:
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward40", logger, cfg); err != nil {
+            return true, err
+        }
+        return true, nil
+    case !reward30 && playerLevel >= 30:
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward30", logger, cfg); err != nil {
+            return true, err
+        }
+        return true, nil
+    case !reward20 && playerLevel >= 20:
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward20", logger, cfg); err != nil {
+            return true, err
+        }
+        return true, nil
+    case !reward10 && playerLevel >= 10:
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward10", logger, cfg); err != nil {
+            return true, err
+        }
+        return true, nil
+    case !reward0:
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward0", logger, cfg); err != nil {
+            return true, err
+        }
+        return true, nil
     }
-    return true, nil
-case !reward40 && playerLevel >= 40:
-    if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward40", logger,cfg); err != nil {
-        return true, err
-    }
-    return true, nil
-case !reward30 && playerLevel >= 30:
-    if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward30", logger, cfg); err != nil {
-        return true, err
-    }
-    return true, nil
-case !reward20 && playerLevel >= 20:
-    if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward20", logger,cfg); err != nil {
-        return true, err
-    }
-    return true, nil
-case !reward10 && playerLevel >= 10:
-    if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward10", logger, cfg); err != nil {
-        return true, err
-    }
-    return true, nil
-case !reward0:
-    if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward0", logger, cfg); err != nil {
-        return true, err
-    }
-    return true, nil
-}
 
     // Если ни один из флагов не установлен, возвращаем false и ошибку nil
     return false, nil

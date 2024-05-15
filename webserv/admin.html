@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма</title>
+</head>
+<body>
+
+<h2>Отправка сообщения и запланированное выключение сервера</h2>
+
+<div id="messageForm">
+    <h3>Отправка сообщения</h3>
+    <form id="sendMessageForm" onsubmit="sendMessage(event)">
+        <label for="message">Введите сообщение:</label><br>
+        <input type="text" id="message" name="message"><br>
+        <button type="submit">Отправить сообщение</button>
+    </form>
+</div>
+
+<div id="shutdownForm">
+    <h3>Выключить сервер</h3>
+    <form id="shutdownServerForm" onsubmit="shutdownServer(event)">
+        <label for="time">Введите время в секундах:</label><br>
+        <input type="number" id="time" name="time"><br>
+        <button type="submit">Выключить сервер</button>
+    </form>
+</div>
+
+<div id="giveForm">
+    <h3>Give</h3>
+    <form id="giveItemForm" onsubmit="giveItem(event)">
+        <label for="user">Пользователь (User):</label><br>
+        <input type="text" id="user" name="user"><br>
+        <label for="item">Предмет (Item):</label><br>
+        <input type="text" id="item" name="item"><br>
+        <label for="count">Количество (Count):</label><br>
+        <input type="number" id="count" name="count"><br>
+        <button type="submit">Give</button>
+    </form>
+</div>
+
+<script>
+    async function sendMessage(event) {
+        event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+        var message = document.getElementById("message").value;
+        if (!message.trim()) {
+            alert("Поле 'message' является обязательным");
+            return;
+        }
+        try {
+            const response = await fetch('/admin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ action: 'Отправить сообщение', message })
+            });
+            const data = await response.text();
+            alert(data); // Отображаем ответ сервера
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+    }
+
+    async function shutdownServer(event) {
+        event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+        var time = document.getElementById("time").value;
+        if (!time.trim() || isNaN(time)) {
+            alert("Поле 'time' должно быть числом и не может быть пустым");
+            return;
+        }
+        try {
+            const response = await fetch('/admin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ action: 'Выключить сервер', time })
+            });
+            const data = await response.text();
+            alert(data); // Отображаем ответ сервера
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+    }
+
+async function giveItem(event) {
+    event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+    var user = document.getElementById("user").value;
+    var item = document.getElementById("item").value;
+    var count = document.getElementById("count").value;
+    
+    try {
+        const response = await fetch('/admin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ action: 'Give', user, item, count })
+        });
+        const data = await response.text();
+        alert(data); // Отображаем ответ сервера
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+</script>
+
+</body>
+</html>

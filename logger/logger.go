@@ -3,7 +3,31 @@ package logger
 import (
     "log"
     "os"
+    "sync"
 )
+
+var (
+    logFile   *os.File
+    logFileMu sync.Mutex
+)
+
+// InitLogFile инициализирует файл логов. Эта функция должна быть вызвана при запуске приложения.
+func InitLogFile(path string) error {
+    logFileMu.Lock()
+    defer logFileMu.Unlock()
+
+    if logFile != nil {
+        // Если файл логов уже инициализирован, закрываем его перед созданием нового
+        logFile.Close()
+    }
+
+    file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+    if err != nil {
+        return err
+    }
+    logFile = file
+    return nil
+}
 
 // LogLevel определяет уровни логгирования
 type LogLevel int
@@ -25,10 +49,10 @@ type Logger struct {
 }
 
 // NewLogger создает новый экземпляр Logger
-func NewLogger(level LogLevel, file *os.File) *Logger {
+func NewLogger(level LogLevel) *Logger {
     return &Logger{
         level:  level,
-        logger: log.New(file, "", log.LstdFlags|log.Lshortfile),
+        logger: log.New(logFile, "", log.LstdFlags|log.Lshortfile),
     }
 }
 
@@ -55,17 +79,16 @@ func (l *Logger) Log(level LogLevel, format string, args ...interface{}) {
 }
 
 // NewErrorLogger создает новый экземпляр Logger с уровнем Error
-func NewErrorLogger(file *os.File) *Logger {
-    return NewLogger(Error, file)
+func NewErrorLogger() *Logger {
+    return NewLogger(Error)
 }
 
 // NewWarningLogger создает новый экземпляр Logger с уровнем Warning
-func NewWarningLogger(file *os.File) *Logger {
-    return NewLogger(Warning, file)
+func NewWarningLogger() *Logger {
+    return NewLogger(Warning)
 }
 
 // NewInfoLogger создает новый экземпляр Logger с уровнем Info
-func NewInfoLogger(file *os.File) *Logger {
-    return NewLogger(Info, file)
+func NewInfoLogger() *Logger {
+    return NewLogger(Info)
 }
-

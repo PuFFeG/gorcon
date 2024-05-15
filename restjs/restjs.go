@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"bytes"
 	"fmt"
 	"draw/logger"
 	"draw/config"
+	    "strings" // Добавляем импорт пакета strings
 )
 
 type Player struct {
@@ -66,4 +68,83 @@ func FetchPlayers(logger *logger.Logger, srvConfig config.ServerConfig) ([]Playe
     }
 
     return data.Players, nil
+}
+
+func BroadcastMsg(message string) error {
+    srvConfig, err := config.GetConfigSrv()
+    if err != nil {
+        return err
+    }
+
+    // Создание HTTP клиента с таймаутом
+    client := &http.Client{Timeout: 10 * time.Second}
+
+    // Создание структуры данных для сообщения
+    msg := struct {
+        Message string `json:"message"`
+    }{
+        Message: message,
+    }
+
+    // Кодирование структуры в JSON
+    reqBodyJSON, err := json.Marshal(msg)
+    if err != nil {
+        return err
+    }
+
+    // Создание запроса с аутентификацией
+    reqURL := fmt.Sprintf("http://%s:%d/v1/api/announce", srvConfig.IP, srvConfig.Port)
+    req, err := http.NewRequest("POST", reqURL, bytes.NewReader(reqBodyJSON))
+    if err != nil {
+        return err
+    }
+    req.SetBasicAuth(srvConfig.Login, srvConfig.Password)
+    req.Header.Set("Content-Type", "application/json")
+
+    // Выполнение запроса
+    resp, err := client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    // Проверка статуса HTTP ответа
+    if resp.StatusCode != http.StatusOK {
+        return fmt.Errorf("неверный статус код: %d", resp.StatusCode)
+    }
+
+    return nil
+}
+
+func ShutdownSrv(waittime int) error {
+    srvConfig, err := config.GetConfigSrv()
+    if err != nil {
+        return err
+    }
+    // Создание HTTP клиента с таймаутом
+    client := &http.Client{Timeout: 10 * time.Second}
+
+    // Создание запроса с аутентификацией
+    reqURL := fmt.Sprintf("http://%s:%d/v1/api/shutdown", srvConfig.IP, srvConfig.Port)
+    reqBody := fmt.Sprintf(`{"waittime": %d, "message": "reboot in %d second"}`, waittime, waittime)
+    req, err := http.NewRequest("POST", reqURL, strings.NewReader(reqBody))
+    if err != nil {
+        return err
+    }
+    req.SetBasicAuth(srvConfig.Login, srvConfig.Password)
+    req.Header.Set("Content-Type", "application/json")
+
+    // Выполнение запроса
+    resp, err := client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    // Проверка статуса HTTP ответа
+    if resp.StatusCode != http.StatusOK {
+        return fmt.Errorf("неверный статус код: %d", resp.StatusCode)
+    }
+
+    return nil
 }
