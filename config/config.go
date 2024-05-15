@@ -3,7 +3,13 @@ package config
 import (
     "encoding/json"
     "os"
-	    "sync"
+    "sync"
+)
+
+var (
+    cfg     Config
+    cfgErr  error
+    cfgOnce sync.Once
 )
 
 // MySQLConfig содержит настройки для подключения к базе данных MySQL.
@@ -28,15 +34,14 @@ type ServerConfig struct {
 
 // PakPatchConfig содержит настройки для группы "pakpatch".
 type PakPatchConfig struct {
-    Reward0 	string `json:"Reward0"`
-    Reward10    string `json:"Reward10"`
-    Reward20    string `json:"Reward20"`
-    Reward30    string `json:"Reward30"`
-    Reward40    string `json:"Reward40"`
-    Reward50    string `json:"Reward50"`
-    RewardDay    string `json:"RewardDay"`
-    RewardWeek    string `json:"RewardWeek"`
-
+    Reward0   string `json:"Reward0"`
+    Reward10  string `json:"Reward10"`
+    Reward20  string `json:"Reward20"`
+    Reward30  string `json:"Reward30"`
+    Reward40  string `json:"Reward40"`
+    Reward50  string `json:"Reward50"`
+    RewardDay string `json:"RewardDay"`
+    RewardWeek string `json:"RewardWeek"`
 }
 
 // Config содержит всю конфигурацию для приложения.
@@ -46,35 +51,28 @@ type Config struct {
     PakPatch PakPatchConfig `json:"pakpatch"`
 }
 
-// LoadConfigFromFile загружает конфигурацию из файла.
-func LoadConfigFromFile(filename string) (Config, error) {
-    var config Config
-    configFile, err := os.Open(filename)
-    if err != nil {
-        return config, err
-    }
-    defer configFile.Close()
-
-    decoder := json.NewDecoder(configFile)
-    if err := decoder.Decode(&config); err != nil {
-        return config, err
-    }
-
-    return config, nil
-}
-
-var (
-    cfg     Config
-    cfgOnce sync.Once
-    cfgErr  error
-)
-
+// GetConfigSrv возвращает конфигурацию сервера.
 func GetConfigSrv() (ServerConfig, error) {
     cfgOnce.Do(func() {
-        // Загружаем конфигурацию при первом вызове функции
         cfg, cfgErr = loadConfig("config.json")
     })
     return cfg.Server, cfgErr
+}
+
+// GetConfigSQL возвращает конфигурацию MySQL.
+func GetConfigSQL() (MySQLConfig, error) {
+    cfgOnce.Do(func() {
+        cfg, cfgErr = loadConfig("config.json")
+    })
+    return cfg.MySQL, cfgErr
+}
+
+// GetConfig возвращает всю конфигурацию.
+func GetConfig() (Config, error) {
+    cfgOnce.Do(func() {
+        cfg, cfgErr = loadConfig("config.json")
+    })
+    return cfg, cfgErr
 }
 
 // loadConfig загружает конфигурацию из файла и возвращает ее.

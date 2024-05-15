@@ -10,11 +10,20 @@ import (
 	"time"
 	"strings"
 )
-
+var log = logger.NewInfoLogger()
+var cfg config.Config
+func init() {
+    // Получение конфигурации сервера
+    var err error
+    cfg, err = config.GetConfig()
+    if err != nil {
+        panic("Ошибка при получении конфигурации сервера: " + err.Error())
+    }
+}
 
 // GivePak принимает имя игрока и путь к JSON-файлу с конфигурацией и выполняет команды для выдачи предметов
-func GivePak(logger *logger.Logger, userID string, jsonPath string, cfg config.Config) error {
-	logger.Info("New play")
+func GivePak(userID string, jsonPath string) error {
+	log.Info("New play")
 	var jsonPars string
 
 	switch jsonPath {
@@ -38,7 +47,7 @@ func GivePak(logger *logger.Logger, userID string, jsonPath string, cfg config.C
 		fmt.Printf("Неизвестный jsonPath: %s\n", jsonPath)
 		return fmt.Errorf("Неизвестный jsonPath: %s", jsonPath)
 	}
-	logger.Error("ASDASDASDASDASDASD")
+	log.Error("ASDASDASDASDASDASD")
 
 	configFile, err := ioutil.ReadFile(jsonPars)
 	if err != nil {
@@ -55,7 +64,7 @@ func GivePak(logger *logger.Logger, userID string, jsonPath string, cfg config.C
 	type Config struct {
 		Items []ConfigItem `json:"items"`
 	}
-	logger.Info("zaloopa")
+	log.Info("zaloopa")
 
 	// Распарсиваем JSON в структуру
 	var config Config
@@ -83,11 +92,6 @@ func GivePak(logger *logger.Logger, userID string, jsonPath string, cfg config.C
 	return nil
 }
 func GiveItem(item string, args ...interface{}) error {
-    cfg, err := config.GetConfigSrv()
-    if err != nil {
-        return err
-    }
-
     // Определяем значения по умолчанию
     var user string = "76561198061293904"
     var count int = 1
@@ -103,9 +107,9 @@ func GiveItem(item string, args ...interface{}) error {
             count = val
         }
     }
-
+	user = strings.TrimPrefix(user, "steam_")
     // Формируем команду для выполнения
-    command := fmt.Sprintf("%s -H %s -P %s -p %s \"give %s %s %d\"", cfg.RconPatch, cfg.IP, cfg.RconPort, cfg.Password, user, item, count)
+    command := fmt.Sprintf("%s -H %s -P %s -p %s \"give %s %s %d\"", cfg.Server.RconPatch, cfg.Server.IP, cfg.Server.RconPort, cfg.Server.Password, user, item, count)
     fmt.Println("Выполняем команду:", command)
 
     // Выполняем команду ARRCON

@@ -11,11 +11,23 @@ _ "github.com/go-sql-driver/mysql"
 
 )
 var db *sql.DB
-func InitDB(logger *logger.Logger, mysqlCfg config.MySQLConfig) (*sql.DB, error) {
+
+var log = logger.NewInfoLogger()
+var mysqlCfg config.MySQLConfig
+func init() {
+    // Получение конфигурации сервера
+    var err error
+    mysqlCfg, err = config.GetConfigSQL()
+    if err != nil {
+        panic("Ошибка при получении конфигурации сервера: " + err.Error())
+    }
+}
+
+func InitDB() (*sql.DB, error) {
     dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", mysqlCfg.Login, mysqlCfg.Password, mysqlCfg.IP, mysqlCfg.Port, mysqlCfg.Database)
     dbConn, err := sql.Open("mysql", dataSourceName)
     if err != nil {
-        logger.Error("Error connecting to the database '%s': %v", mysqlCfg.Database, err)
+        log.Error("Error connecting to the database '%s': %v", mysqlCfg.Database, err)
         return nil, err
     }
 
@@ -24,11 +36,11 @@ func InitDB(logger *logger.Logger, mysqlCfg config.MySQLConfig) (*sql.DB, error)
 query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), email VARCHAR(255)) ENGINE=InnoDB", tableName)
     _, err = dbConn.Exec(query)
     if err != nil {
-        logger.Error("Error opening table '%s': %v", tableName, err)
+        log.Error("Error opening table '%s': %v", tableName, err)
         dbConn.Close() // Закрываем соединение в случае ошибки
         return nil, err
     }
-        logger.Info("All open '%s': %v", tableName, err)
+        log.Info("All open '%s': %v", tableName, err)
 
     return dbConn, nil
 }
@@ -39,11 +51,11 @@ func CloseDB() {
 		db.Close()
 	}
 }
-func UpdatePlayersData(db *sql.DB, tableName string, players []restjs.Player, logger *logger.Logger) error {
+func UpdatePlayersData(db *sql.DB, tableName string, players []restjs.Player) error {
     // Проверяем данные каждого игрока в базе данных
     for _, player := range players {
-        if err := checkPlayerData(db, tableName, player, logger); err != nil {
-		        logger.Error("CHHHHJKK")
+        if err := checkPlayerData(db, tableName, player); err != nil {
+		        log.Error("CHHHHJKK")
             continue
         }
     }
@@ -51,18 +63,18 @@ func UpdatePlayersData(db *sql.DB, tableName string, players []restjs.Player, lo
     return nil
 }
 
-func checkPlayerData(db *sql.DB, tableName string, player restjs.Player, logger *logger.Logger) error {
+func checkPlayerData(db *sql.DB, tableName string, player restjs.Player) error {
     var count int
 	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE PlayerID = ?", tableName)
 	err := db.QueryRow(query, player.PlayerID).Scan(&count)
     if err != nil {
-        logger.Error("Ошибка выполнения запроса к базе данных: %v", err)
+        log.Error("Ошибка выполнения запроса к базе данных: %v", err)
         return err
     }
 
     // Если данных об игроке нет в базе данных, добавляем их
     if count == 0 {
-        if err := addPlayerData(db, tableName, player, logger); err != nil {
+        if err := addPlayerData(db, tableName, player); err != nil {
             return err
         }
     }
@@ -70,24 +82,24 @@ func checkPlayerData(db *sql.DB, tableName string, player restjs.Player, logger 
     return nil
 }
 
-func addPlayerData(db *sql.DB, tableName string, player restjs.Player, logger *logger.Logger) error {
+func addPlayerData(db *sql.DB, tableName string, player restjs.Player) error {
 	query := fmt.Sprintf("INSERT INTO %s (PlayerID, Name, UserID, IP, Lvl) VALUES (?, ?, ?, ?, ?)", tableName)
 stmt, err := db.Prepare(query)
     if err != nil {
-        logger.Error("Ошибка при подготовке запроса к базе данных: %v", err)
+        log.Error("Ошибка при подготовке запроса к базе данных: %v", err)
         return err
     }
     defer stmt.Close()
 
     _, err = stmt.Exec(player.PlayerID, player.Name, player.UserID, player.IP, player.Level)
     if err != nil {
-        logger.Error("Ошибка выполнения запроса к базе данных: %v", err)
+        log.Error("Ошибка выполнения запроса к базе данных: %v", err)
         return err
     }
     return nil
 }
 
-func CheckRewards(db *sql.DB, tableName string, PlayerID string, UserID string, playerLevel int, logger *logger.Logger, cfg config.Config) (bool, error) {
+func CheckRewards(db *sql.DB, tableName string, PlayerID string, UserID string, playerLevel int) (bool, error) {
     // Составляем SQL-запрос для получения значений флагов из базы данных
     query := fmt.Sprintf("SELECT Reward0, Reward10, Reward20, Reward30, Reward40, Reward50, RewardDay, RewardWeek FROM %s WHERE PlayerID = ?", tableName)
     row := db.QueryRow(query, PlayerID)
@@ -98,50 +110,50 @@ func CheckRewards(db *sql.DB, tableName string, PlayerID string, UserID string, 
     if err := row.Scan(&reward0, &reward10, &reward20, &reward30, &reward40, &reward50, &rewardDay, &rewardWeek); err != nil {
         if err == sql.ErrNoRows {
             // Если нет строк, игрок не найден, можно вернуть false и ошибку nil
-            logger.Info("сли нет строк, игрок не найден, можно вернуть false и ошибку nil")
+            log.Info("сли нет строк, игрок не найден, можно вернуть false и ошибку nil")
             return false, nil
         }
-        logger.Error("Ошибка выполнения запроса к базе данных: %v", err)
+        log.Error("Ошибка выполнения запроса к базе данных: %v", err)
         return false, err
     }
 
     // Проверяем флаги начиная с Reward50
     switch true {
     case !rewardDay:
-        if err := ChangeReward(db, tableName, PlayerID, UserID, "RewardDay", logger, cfg); err != nil {
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "RewardDay"); err != nil {
             return true, err
         }
     case !rewardWeek && playerLevel >= 222:
-        if err := ChangeReward(db, tableName, PlayerID, UserID, "RewardWeek", logger, cfg); err != nil {
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "RewardWeek"); err != nil {
             return true, err
         }
     case !reward50 && playerLevel >= 50:
-        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward50", logger, cfg); err != nil {
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward50"); err != nil {
             return true, err
         }
         return true, nil
     case !reward40 && playerLevel >= 40:
-        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward40", logger, cfg); err != nil {
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward40"); err != nil {
             return true, err
         }
         return true, nil
     case !reward30 && playerLevel >= 30:
-        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward30", logger, cfg); err != nil {
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward30"); err != nil {
             return true, err
         }
         return true, nil
     case !reward20 && playerLevel >= 20:
-        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward20", logger, cfg); err != nil {
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward20"); err != nil {
             return true, err
         }
         return true, nil
     case !reward10 && playerLevel >= 10:
-        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward10", logger, cfg); err != nil {
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward10"); err != nil {
             return true, err
         }
         return true, nil
     case !reward0:
-        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward0", logger, cfg); err != nil {
+        if err := ChangeReward(db, tableName, PlayerID, UserID, "Reward0"); err != nil {
             return true, err
         }
         return true, nil
@@ -151,8 +163,8 @@ func CheckRewards(db *sql.DB, tableName string, PlayerID string, UserID string, 
     return false, nil
 }
 
-func ChangeReward(db *sql.DB, tableName, PlayerID, userID, rewardName string, logger *logger.Logger, cfg config.Config) error {
-    logger.Info("Вход в %v", rewardName)
+func ChangeReward(db *sql.DB, tableName, PlayerID, userID, rewardName string) error {
+    log.Info("Вход в %v", rewardName)
 
     // Составляем SQL-запрос для обновления значения флага в базе данных
     query := fmt.Sprintf("UPDATE %s SET %s = TRUE WHERE PlayerID = ?", tableName, rewardName)
@@ -160,14 +172,14 @@ func ChangeReward(db *sql.DB, tableName, PlayerID, userID, rewardName string, lo
     // Выполняем SQL-запрос
     _, err := db.Exec(query, PlayerID)
     if err != nil {
-        logger.Error("Ошибка при обновлении флага '%s' для игрока '%s': %v", rewardName, PlayerID, err)
+        log.Error("Ошибка при обновлении флага '%s' для игрока '%s': %v", rewardName, PlayerID, err)
         return err
     }
-    err = givepak.GivePak(logger, userID, rewardName, cfg)
+    err = givepak.GivePak(userID, rewardName)
     if err != nil {
         return  err
     }
 
-    logger.Info("Флаг '%s' для игрока '%s' успешно обновлен", rewardName, userID)
+    log.Info("Флаг '%s' для игрока '%s' успешно обновлен", rewardName, userID)
     return nil
 }

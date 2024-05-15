@@ -11,7 +11,18 @@ import (
 	"fmt"
 	"os"
 		"draw/restjs"
+					"database/sql"
+	"draw/logger"
+	"draw/data"
+	"draw/webserv"
+	"sync"
+	"bytes"
+	"image/png"
+	"encoding/base64"
+	
 )
+var log = logger.NewInfoLogger()
+
 
 // Масштаб координат
 var scaleX float64 = 1.0
@@ -120,4 +131,57 @@ func randomColor() color.Color {
 		uint8(rand.Intn(256)), // Синий
 		255,                    // Альфа-канал (непрозрачность)
 	}
+}
+
+
+var (
+	mapImageBase64 string
+	mapMutex       sync.RWMutex
+)
+
+// LoadMapAndBase64 загружает изображение и обновляет его base64-представление
+func LoadMapAndBase64(players []PlayerCoord) {
+	img, err := LoadImage("input.png")
+	if err != nil {
+		panic(err)
+	}
+
+	newImg := DrawPlayers(img, players)
+	mapMutex.Lock()
+	defer mapMutex.Unlock()
+	mapImageBase64 = imageToBase64(newImg)
+}
+
+// GetMapImageBase64 возвращает текущее base64-представление изображения
+func GetMapImageBase64() string {
+	mapMutex.RLock()
+	defer mapMutex.RUnlock()
+	return mapImageBase64
+}
+
+func imageToBase64(img image.Image) string {
+	buf := new(bytes.Buffer)
+	err := png.Encode(buf, img)
+	if err != nil {
+		panic(err)
+	}
+	return base64.StdEncoding.EncodeToString(buf.Bytes())
+}
+
+func UpdateImage(db *sql.DB) {
+	players, err := restjs.FetchPlayers()
+	if err != nil {
+		log.Error("Ошибка получения данных игроков:", err)
+		return
+	}
+	        err = data.UpdateData(db, players)
+        if err != nil {
+            log.Error("Ошибка обновления данных: %v", err)
+        }
+
+	LoadMapAndBase64(ConvertToPlayerCoord(players, 1700, 1166))
+	base64Data := GetMapImageBase64()
+	webserv.ChangeMapImageBase64(base64Data)
+	webserv.NotifyMapUpdate()
+	fmt.Println("Изображение обновлено.")
 }

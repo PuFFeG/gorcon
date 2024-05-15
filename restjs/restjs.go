@@ -22,17 +22,26 @@ type Player struct {
 	LocationY float64 `json:"location_y"`
 	Level int `json:"level"`
 }
-
-func FetchPlayers(logger *logger.Logger, srvConfig config.ServerConfig) ([]Player, error) {
+var log = logger.NewInfoLogger()
+var srvConfig config.ServerConfig
+func init() {
+    // Получение конфигурации сервера
+    var err error
+    srvConfig, err = config.GetConfigSrv()
+    if err != nil {
+        panic("Ошибка при получении конфигурации сервера: " + err.Error())
+    }
+}
+func FetchPlayers() ([]Player, error) {
     // Creating HTTP client with timeout
     client := &http.Client{Timeout: 10 * time.Second}
-        logger.Info("Connected: %v", srvConfig.IP)
+        log.Info("Connected: %v", srvConfig.IP)
 
     // Creating request with authentication
     reqURL := fmt.Sprintf("http://%s:%d/v1/api/players", srvConfig.IP, srvConfig.Port)
     req, err := http.NewRequest("GET", reqURL, nil)
     if err != nil {
-        logger.Error("Error creating HTTP request: %v", err)
+        log.Error("Error creating HTTP request: %v", err)
         return nil, err
     }
     req.SetBasicAuth(srvConfig.Login, srvConfig.Password)
@@ -40,21 +49,21 @@ func FetchPlayers(logger *logger.Logger, srvConfig config.ServerConfig) ([]Playe
     // Executing request
     resp, err := client.Do(req)
     if err != nil {
-        logger.Error("Error executing HTTP request: %v", err)
+        log.Error("Error executing HTTP request: %v", err)
         return nil, err
     }
     defer resp.Body.Close()
 
     // Checking HTTP response status
     if resp.StatusCode != http.StatusOK {
-        logger.Error("Error executing request: invalid status code %d", resp.StatusCode)
+        log.Error("Error executing request: invalid status code %d", resp.StatusCode)
         return nil, fmt.Errorf("invalid status code: %d", resp.StatusCode)
     }
 
     // Reading JSON data from response body
     body, err := ioutil.ReadAll(resp.Body)
     if err != nil {
-        logger.Error("Error reading data from response: %v", err)
+        log.Error("Error reading data from response: %v", err)
         return nil, err
     }
 
@@ -63,7 +72,7 @@ func FetchPlayers(logger *logger.Logger, srvConfig config.ServerConfig) ([]Playe
         Players []Player `json:"players"`
     }
     if err := json.Unmarshal(body, &data); err != nil {
-        logger.Error("Error decoding JSON: %v", err)
+        log.Error("Error decoding JSON: %v", err)
         return nil, err
     }
 
@@ -71,10 +80,6 @@ func FetchPlayers(logger *logger.Logger, srvConfig config.ServerConfig) ([]Playe
 }
 
 func BroadcastMsg(message string) error {
-    srvConfig, err := config.GetConfigSrv()
-    if err != nil {
-        return err
-    }
 
     // Создание HTTP клиента с таймаутом
     client := &http.Client{Timeout: 10 * time.Second}
@@ -117,10 +122,7 @@ func BroadcastMsg(message string) error {
 }
 
 func ShutdownSrv(waittime int) error {
-    srvConfig, err := config.GetConfigSrv()
-    if err != nil {
-        return err
-    }
+
     // Создание HTTP клиента с таймаутом
     client := &http.Client{Timeout: 10 * time.Second}
 
