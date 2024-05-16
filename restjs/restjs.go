@@ -121,7 +121,7 @@ func BroadcastMsg(message string) error {
     return nil
 }
 
-func ShutdownSrv(waittime int) error {
+func shutdownSrv(waittime int) error {
 
     // Создание HTTP клиента с таймаутом
     client := &http.Client{Timeout: 10 * time.Second}
@@ -146,6 +146,37 @@ func ShutdownSrv(waittime int) error {
     // Проверка статуса HTTP ответа
     if resp.StatusCode != http.StatusOK {
         return fmt.Errorf("неверный статус код: %d", resp.StatusCode)
+    }
+
+    return nil
+}
+func ScheduledShutdown(waittime int) error {
+    // Запуск ShutdownSrv
+    shutdownSrv(waittime)
+    
+    // Создание таймера для отправки сообщения каждую секунду
+    ticker := time.NewTicker(1 * time.Second)
+    defer ticker.Stop() // Остановка таймера при завершении функции
+    
+    // Обратный отсчёт
+    for t := waittime; t >= 0; t-- {
+        // Отправка сообщения каждую секунду
+        if t%60 == 0 {
+            if err := BroadcastMsg(fmt.Sprintf("Server will shutdown in %d minit.", t/60)); err != nil {
+                return err
+            }
+        }
+
+        // Обратный отсчёт на последние 20 секунд
+        if t <= 20 {
+            // Отправляем сообщение для каждой секунды обратного отсчета
+            if err := BroadcastMsg(fmt.Sprintf("Server will shutdown in %d seconds.", t)); err != nil {
+                return err
+            }
+        }
+
+        // Дожидаемся прихода следующего сигнала от таймера
+        <-ticker.C
     }
 
     return nil

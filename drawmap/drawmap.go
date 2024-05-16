@@ -11,9 +11,7 @@ import (
 	"fmt"
 	"os"
 		"draw/restjs"
-					"database/sql"
 	"draw/logger"
-	"draw/data"
 	"draw/webserv"
 	"sync"
 	"bytes"
@@ -168,16 +166,7 @@ func imageToBase64(img image.Image) string {
 	return base64.StdEncoding.EncodeToString(buf.Bytes())
 }
 
-func UpdateImage(db *sql.DB) {
-	players, err := restjs.FetchPlayers()
-	if err != nil {
-		log.Error("Ошибка получения данных игроков:", err)
-		return
-	}
-	        err = data.UpdateData(db, players)
-        if err != nil {
-            log.Error("Ошибка обновления данных: %v", err)
-        }
+func UpdateImage(players []restjs.Player) {
 
 	LoadMapAndBase64(ConvertToPlayerCoord(players, 1700, 1166))
 	base64Data := GetMapImageBase64()

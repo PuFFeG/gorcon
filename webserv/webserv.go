@@ -10,7 +10,6 @@ import (
 	"time"
 	"draw/logger"
 	"draw/restjs"
-		"draw/data"
 	"strconv"
 	"draw/givepak"
 )
@@ -97,7 +96,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
             }
             // Запланированное выключение сервера
             if timeInSeconds > 0 {
-                go data.ScheduledShutdown(timeInSeconds)
+                go restjs.ScheduledShutdown(timeInSeconds)
                 fmt.Fprintf(w, "Сервер будет выключен через %d секунд<br>", timeInSeconds)
             }
         case "Give":
@@ -153,7 +152,7 @@ func updateLoop() {
 
 func lolHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method == "POST" {
-        data.DrawRocket()
+        drawRocket()
         fmt.Fprint(w, "Ракета успешно запущена!")
         return
     }
@@ -171,5 +170,30 @@ func lolHandler(w http.ResponseWriter, r *http.Request) {
     if _, err := io.Copy(w, file); err != nil {
         http.Error(w, "Ошибка при чтении файла", http.StatusInternalServerError)
         return
+    }
+}
+func drawRocket() {
+    rocket := []string{
+        "       .",
+        "      / \\",
+        "     / _ \\",
+        "    | / \\ |",
+        "    ||   ||",
+        "    ||   ||",
+        "    ||___||",
+        "    |_____|",
+        "   /       \\",
+        "  /         \\",
+        " /___________\\",
+        " |    ___    |",
+        " |   /   \\   |",
+        " |__/     \\__|",
+    }
+
+    for _, line := range rocket {
+        // Выводим строку ракеты в консоль для отладки
+        restjs.BroadcastMsg(line)
+
+        // Задержка в одну секунду
     }
 }

@@ -183,3 +183,24 @@ func ChangeReward(db *sql.DB, tableName, PlayerID, userID, rewardName string) er
     log.Info("Флаг '%s' для игрока '%s' успешно обновлен", rewardName, userID)
     return nil
 }
+func UpdateData(db *sql.DB, players []restjs.Player) error {
+	// Update players data in the database
+	err := UpdatePlayersData(db, mysqlCfg.Table, players) // Use sqlconn package to update players data
+	if err != nil {
+		return err
+	}
+	return checkRewardsForPlayers(db, players)
+}
+
+func checkRewardsForPlayers(db *sql.DB, players []restjs.Player) error {
+    var err error // Объявляем переменную здесь
+    for _, player := range players {
+        _, err = CheckRewards(db, mysqlCfg.Table, player.PlayerID, player.UserID, player.Level)
+        if err != nil {
+            log.Error("Ошибка при проверке наград для игрока %s: %v", player.UserID, err)
+            // Продолжаем проверку для следующего игрока даже в случае ошибки
+            continue
+        }
+    }
+    return err // Возвращаем err в конце функции
+}

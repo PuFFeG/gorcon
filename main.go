@@ -8,15 +8,15 @@ import (
 	"time"
 	"draw/data"	
 	"draw/webserv"
-		"draw/drawmap"
-			"draw/sqlconn"			
+	"draw/logger"
 			"draw/mytimer"	
-	"draw/wargmshop"
-			
+		"draw/sqlconn"
+				"draw/restjs"
+		
 )
 
 func main() {
-
+logger.InitLogFile("log.log")
     db, err := sqlconn.InitDB()
     if err != nil {
         // Обработка ошибки
@@ -25,14 +25,14 @@ func main() {
     // Функция, которая будет вызываться по расписанию
     scheduledFunc := func() {
         fmt.Println("Функция сработала в 8 часов утра.")
-        data.ScheduledShutdown(300) // Отправляем сообщение "test"
+        restjs.ScheduledShutdown(300) // Отправляем сообщение "test"
     }
 
     // Запускаем функцию scheduledFunc по расписанию
     mytimer.Schedule(scheduledFunc)
 
     go webserv.Run()
-    wargmshop.Handler()
+		data.UpdateEveryMin(db)
 
     updateTicker := time.NewTicker(50 * time.Second)
     defer updateTicker.Stop()
@@ -40,8 +40,7 @@ func main() {
     for {
         select {
         case <-updateTicker.C:
-            drawmap.UpdateImage(db)
-
+		data.UpdateEveryMin(db)
         case <-waitForShutdown():
             fmt.Println("Сервер был выключен.")
             return

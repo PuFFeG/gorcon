@@ -24,7 +24,7 @@ type Purchase struct {
     Status       string `json:"status"`
     Description  string `json:"desc"`
     Type         string `json:"type"`
-    Price        int    `json:"price"`
+    Price        float64 `json:"price"`
     Amount       int    `json:"amount"`
     Currency     string `json:"cy"`
     Delivery     string `json:"delivery"`
@@ -32,9 +32,10 @@ type Purchase struct {
     Claim        int    `json:"claim"`
 }
 type MatchedData struct {
+    OfferID      int    `json:"offer_id"`
     UserID   string `json:"userId"`
     Item     string `json:"item"`
-    SetCount int    `json:"set_count"`
+	Count     int    `json:"count"`
     ID       int    `json:"id"`
 }
 const (
@@ -133,7 +134,8 @@ func findMatchedPurchases(players []restjs.Player, purchases []Purchase) []Match
                 matchedData = append(matchedData, MatchedData{
                     UserID:   player.UserID,
                     Item:     purchase.Item,
-                    SetCount: purchase.SetCount,
+                    OfferID: purchase.OfferID,
+                    Count: purchase.BuyCount * purchase.SetCount,
                     ID:       purchase.ID,
                 })
                 break // Прерываем внутренний цикл, чтобы не искать дальше
@@ -147,30 +149,33 @@ func findMatchedPurchases(players []restjs.Player, purchases []Purchase) []Match
 func giveAndConfirmItems(matchedPurchases []MatchedData) {
     for _, data := range matchedPurchases {
         if data.Item != "" {
-            givepak.GiveItem(data.Item, data.UserID, data.SetCount)
-            confirmPurchase(data.ID)
+		processMatchedData(data)
+        confirmPurchase(data.ID)
         }
     }
 }
 
-func Handler() {
-    // Загрузка списка игроков из restjs
-    players, err := restjs.FetchPlayers()
-    if err != nil {
-        log.Error("Ошибка при получении списка игроков из restjs:", err)
-        return
-    }
-
+func Handler(players []restjs.Player) {
     // Получение списка покупок из wargmshop
+	        log.Info("test")
     purchases, err := getOpenPurchases()
     if err != nil {
         log.Error("Ошибка при получении списка покупок из wargmshop:", err)
+		        fmt.Printf("", err)
         return
     }
-
-    // Поиск совпадающих покупок
     matchedPurchases := findMatchedPurchases(players, purchases)
-
-    // Выдача предметов и подтверждение выдачи
     giveAndConfirmItems(matchedPurchases)
 }
+func processMatchedData(matchedData MatchedData) {
+    switch matchedData.Item {
+    case "exp_10k":
+	count := matchedData.Count * 10000
+            givepak.GiveExp(matchedData.UserID, count)
+    case "exp_10k2":
+fmt.Printf("dsadad")
+    default:
+            givepak.GiveItem(matchedData.Item, matchedData.UserID, matchedData.Count)
+    }
+}
+

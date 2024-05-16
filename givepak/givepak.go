@@ -152,3 +152,18 @@ func runARCCON(command string) error {
 		return nil
 	}
 }
+func GiveExp(user string,count int) error {
+	user = strings.TrimPrefix(user, "steam_")
+    // Формируем команду для выполнения
+    command := fmt.Sprintf("%s -H %s -P %s -p %s \"give_exp %s %d\"", cfg.Server.RconPatch, cfg.Server.IP, cfg.Server.RconPort, cfg.Server.Password, user, count)
+    fmt.Println("Выполняем команду:", command)
+
+    // Выполняем команду ARRCON
+    if err := runARCCON(command); err != nil {
+        fmt.Printf("Ошибка при выполнении команды ARRCON: %v\n", err)
+        return err
+    }
+
+    return nil
+}
+
